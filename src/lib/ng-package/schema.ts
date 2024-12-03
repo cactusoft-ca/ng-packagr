@@ -32,11 +32,8 @@ export function validateNgPackageSchema(ngPackageJson: unknown): asserts ngPacka
 export function validateNgPackageEntryPointSchema(
   ngPackageJson: unknown,
 ): asserts ngPackageJson is NgPackageEntryConfig {
-  const schema = hasSchema(ngPackageJson) && ngPackageJson.$schema != null
-    ? require(ngPackageJson.$schema)
-    : require('../../ng-entrypoint.schema.json');
   const validate = (ajvNgPackageEntryPointSchemaValidator ??= getSchemaValidator(
-    require(schema),
+    require('../../ng-entrypoint.schema.json'),
   ));
   const isValid = validate(ngPackageJson);
   if (!isValid) {
@@ -44,10 +41,6 @@ export function validateNgPackageEntryPointSchema(
       `Configuration doesn't match the required schema.\n${formatSchemaValidationErrors(validate.errors)}`,
     );
   }
-}
-
-function hasSchema(ngPackageJson: unknown): ngPackageJson is { $schema: string } {
-  return ngPackageJson != null && typeof ngPackageJson === 'object' && '$schema' in ngPackageJson;
 }
 
 function formatSchemaValidationErrors(errors: ErrorObject[]): string {
