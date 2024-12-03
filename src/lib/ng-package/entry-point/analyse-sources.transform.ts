@@ -34,7 +34,8 @@ function analyseEntryPoint(graph: BuildGraph, entryPoint: EntryPointNode, entryP
   const { moduleId } = entryPoint.data.entryPoint;
   const packageNode: PackageNode = graph.find(isPackage);
   const primaryModuleId = packageNode.data.primary.moduleId;
-
+  const { ngPackagrName } = packageNode.data.primary.packageJson;
+  
   debug(`Analysing sources for ${moduleId}`);
   const tsConfigOptions: ts.CompilerOptions = {
     // Needed because of `Property 'extendedDiagnostics' is incompatible with index signature.`
@@ -66,12 +67,17 @@ function analyseEntryPoint(graph: BuildGraph, entryPoint: EntryPointNode, entryP
     options: ts.CompilerOptions,
   ) => {
     return moduleNames.map(name => {
-      const moduleName = typeof name === 'string' ? name : name.fileName;
+      const moduleName = typeof name === 'string' ? name : name.fileName as string;
 
       if (!moduleName.startsWith('.')) {
+        
         if (moduleName === primaryModuleId || moduleName.startsWith(`${primaryModuleId}/`)) {
           potentialDependencies.add(moduleName);
-        }
+        } else if (moduleName === ngPackagrName || moduleName.startsWith(`${ngPackagrName}/`)) {
+          const start = moduleId.split('/')[0];
+          const end = moduleName.substring(ngPackagrName.length);
+          potentialDependencies.add(start + end);
+      }
 
         return undefined;
       }
